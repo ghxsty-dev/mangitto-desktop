@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mangitto - Indirilenler</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0d0d0d; color: white; min-height: 100vh;
+}
+header {
+  background: #0d0d0d; padding: 16px 24px; display: flex;
+  align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  position: sticky; top: 0; z-index: 100;
+}
+header h1 { font-size: 20px; display: flex; align-items: center; gap: 8px; }
+header button {
+  background: #FBBC59; border: none; border-radius: 8px;
+  padding: 8px 14px; cursor: pointer; font-weight: 600; color: #0d0d0d;
+}
+#downloads-list { padding: 20px; max-width: 700px; margin: 0 auto; }
+.manga-group { margin-bottom: 12px; }
+.manga-group h2 {
+  font-size: 16px; color: #FBBC59; cursor: pointer; user-select: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 8px;
+  transition: background 0.15s;
+}
+.manga-group h2:hover { background: rgba(255,255,255,0.08); }
+.manga-group h2 .arrow { transition: transform 0.2s; }
+.manga-group h2 .arrow.open { transform: rotate(90deg); }
+.chapter-list { display: none; padding: 4px 0 4px 14px; }
+.chapter-list.open { display: block; }
+.chapter-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; background: rgba(255,255,255,0.03);
+  border-radius: 6px; margin-bottom: 4px;
+}
+.chapter-item .title { font-weight: 500; font-size: 13px; }
+.chapter-item .meta { font-size: 11px; color: #888; }
+.chapter-item button {
+  background: #4CAF50; border: none; border-radius: 6px;
+  padding: 6px 10px; cursor: pointer; font-weight: 600; font-size: 11px; color: white;
+  display: flex; align-items: center; gap: 4px;
+}
+.loading, .empty { text-align: center; padding: 60px 20px; color: #888; font-size: 15px; line-height: 1.6; }
+#reader-view {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: #0d0d0d; z-index: 1000; display: none; flex-direction: column;
+}
+#reader-view.active { display: flex; }
+#reader-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; background: #0d0d0d;
+}
+#reader-header h2 { font-size: 16px; color: white; }
+#reader-header button {
+  background: none; border: none; color: white; cursor: pointer; padding: 4px 8px;
+}
+#reader-content {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+  align-items: center; padding: 20px; gap: 8px;
+}
+#reader-content img {
+  max-width: 100%; width: 800px; height: auto;
+  border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+#reader-nav {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 16px; padding: 12px 20px; background: #0d0d0d;
+}
+#reader-nav button {
+  background: #FBBC59; border: none; border-radius: 8px;
+  padding: 8px 16px; cursor: pointer; font-weight: 600; color: #1a1a2e;
+  display: flex; align-items: center; gap: 6px;
+}
+#reader-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Indirilenler</h1>
+      <div style="display:flex;gap:8px;">
+        <button id="refresh-btn" onclick="loadDownloads()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Yenile</button>
+        <button id="online-btn" onclick="tryGoOnline()" style="background:#4CAF50;color:white;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Baglan</button>
+      </div>
+    </header>
+    <div id="downloads-list" style="padding:20px;max-width:700px;margin:0 auto;"></div>
+  </div>
+
+  <div id="reader-view">
+    <div id="reader-header">
+      <h2 id="reader-title">Bolum</h2>
+      <button onclick="closeReader()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div id="reader-content"></div>
+    <div id="reader-nav">
+      <div id="rdi" style="flex:1;display:none;flex-direction:column;gap:6px;">
+        <div id="rdt" style="font-size:13px;color:#888;"></div>
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;height:6px;overflow:hidden;"><div id="rdb" style="width:0%;height:100%;background:#FBBC59;border-radius:8px;transition:width 0.3s;"></div></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0;" id="rda">
+        <button id="rdyes" style="display:none;background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;font-size:13px;">Evet</button>
+        <button id="rdno" style="display:none;background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:white;font-size:13px;">Hayir</button>
+        <button id="next-chapter-btn" onclick="goNextChapter()" style="background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:6px;font-size:13px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> Sonraki Bolum</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+var SVG_BOOK = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
+var SVG_TRASH = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+var SVG_SPINNER = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mangitto-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
+var SVG_CHEVRON = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+
+var groupsData = null;
+var currentMangaSlug = '';
+var currentChapterName = '';
+
+
+
+async function loadDownloads() {
+  const listEl = document.getElementById('downloads-list');
+  listEl.innerHTML = '<div class="loading">Yukleniyor...</div>';
+
+  try {
+    const downloads = await window.mangittoAPI.getDownloads();
+    if (downloads.length === 0) {
+      listEl.innerHTML = '<div class="empty">Henuz indirilen bolum yok.<br>Internete baglanip manga okurken indirme butonuna tiklayarak bolum indirebilirsiniz.</div>';
+      return;
+    }
+
+    groupsData = {};
+    for (const dl of downloads) {
+      if (!groupsData[dl.mangaSlug]) groupsData[dl.mangaSlug] = [];
+      groupsData[dl.mangaSlug].push(dl);
+    }
+
+    let html = '';
+    for (const manga in groupsData) {
+      html += '<div class="manga-group">' +
+        '<h2 onclick="toggleGroup(this)">' +
+        '<span>' + manga + '</span>' +
+        '<span class="arrow">' + SVG_CHEVRON + '</span>' +
+        '</h2>' +
+        '<div class="chapter-list"></div></div>';
+    }
+    listEl.innerHTML = html;
+  } catch (err) {
+    listEl.innerHTML = '<div class="loading">Yuklenirken hata: ' + err.message + '</div>';
+  }
+}
+
+function toggleGroup(header) {
+  var list = header.parentElement.querySelector('.chapter-list');
+  var arrow = header.querySelector('.arrow');
+  if (list.classList.contains('open')) {
+    list.classList.remove('open');
+    arrow.classList.remove('open');
+  } else {
+    list.classList.add('open');
+    arrow.classList.add('open');
+    if (!list.children.length) renderChapters(list, header.querySelector('span').textContent);
+  }
+}
+
+function renderChapters(list, manga) {
+  var chapters = groupsData[manga];
+  if (!chapters) return;
+  var h = '';
+  for (var j = 0; j < chapters.length; j++) {
+    h += '<div class="chapter-item">' +
+      '<div><div class="title">' + chapters[j].chapterName + '</div><div class="meta">' + chapters[j].pageCount + ' sayfa</div></div>' +
+      '<div style="display:flex;gap:4px;">' +
+      '<button onclick="event.stopPropagation(); openReader(\'' + chapters[j].mangaSlug + '\', \'' + chapters[j].chapterName + '\')">' + SVG_BOOK + ' Oku</button>' +
+      '<button onclick="event.stopPropagation(); deleteChapter(\'' + chapters[j].mangaSlug + '\', \'' + chapters[j].chapterName + '\')" style="background:#e74c3c;">' + SVG_TRASH + '</button></div></div>';
+  }
+  list.innerHTML = h;
+}
+
+function closeReader() { document.getElementById('reader-view').classList.remove('active'); }
+
+async function openReader(mangaSlug, chapterName) {
+  try {
+    const images = await window.mangittoAPI.getChapterImages({ mangaSlug, chapterName });
+    if (!images || images.length === 0) { alert('Gorseller bulunamadi.'); return; }
+    currentMangaSlug = mangaSlug;
+    currentChapterName = chapterName;
+    document.getElementById('reader-title').textContent = mangaSlug + ' - ' + chapterName;
+    var content = document.getElementById('reader-content');
+    var html = '';
+    for (var k = 0; k < images.length; k++) {
+      html += '<img src="' + images[k] + '" alt="Sayfa ' + (k + 1) + '">';
+    }
+    content.innerHTML = html;
+    document.getElementById('reader-view').classList.add('active');
+    updateNextChapterBtn();
+  } catch (err) { alert('Gorseller yuklenirken hata: ' + err.message); }
+}
+
+async function updateNextChapterBtn() {
+  var btn = document.getElementById('next-chapter-btn');
+  var num = parseInt(currentChapterName.replace('bolum-', '')) || 0;
+  var next = 'bolum-' + (num + 1);
+  try {
+    var downloads = await window.mangittoAPI.getDownloads();
+    var found = false;
+    for (var x = 0; x < downloads.length; x++) {
+      if (downloads[x].mangaSlug === currentMangaSlug && downloads[x].chapterName === next) {
+        found = true; break;
+      }
+    }
+    btn.innerHTML = (found ? '' : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> ') + 'Sonraki Bolum';
+    btn.dataset.next = next;
+    btn.dataset.found = found ? '1' : '0';
+  } catch(e) {}
+}
+
+var rdi = document.getElementById('rdi'), rdt = document.getElementById('rdt'), rdb = document.getElementById('rdb'), rdyes = document.getElementById('rdyes'), rdno = document.getElementById('rdno'), rda = document.getElementById('rda');
+
+function showReaderStatus(msg) { rdi.style.display = 'flex'; rdt.textContent = msg; }
+function hideReaderStatus() { rdi.style.display = 'none'; rdt.textContent = ''; rdb.style.width = '0%'; }
+function showReaderConfirm() { rdyes.style.display = ''; rdno.style.display = ''; btn.style.display = 'none'; }
+function hideReaderConfirm() { rdyes.style.display = 'none'; rdno.style.display = 'none'; btn.style.display = ''; }
+
+async function goNextChapter() {
+  var btn = document.getElementById('next-chapter-btn');
+  var num = parseInt(currentChapterName.replace('bolum-', '')) || 0;
+  var next = 'bolum-' + (num + 1);
+
+  if (btn.dataset.found === '1') {
+    closeReader();
+    openReader(currentMangaSlug, next);
+    return;
+  }
+
+  showReaderConfirm();
+  rdyes.onclick = async function() {
+    hideReaderConfirm();
+    showReaderStatus(next + ' indiriliyor... 0%');
+    try {
+      var resp = await fetch('https://mangtto.com/api/manga/' + currentMangaSlug + '/' + (num + 1));
+      var apiData = await resp.json();
+      if (!apiData || !apiData.success || !apiData.data || !apiData.data.chapter || !apiData.data.chapter.static || !apiData.data.chapter.static.length) { hideReaderStatus(); alert('API hatasi.'); return; }
+
+      var fansubId = apiData.data.chapter.static[0].fansubId;
+      var pageCount = apiData.data.chapter.static[0].fileSize || 50;
+      var chNum = apiData.data.chapter.chapter;
+      var imgUrls = [];
+      for (var p = 1; p <= pageCount; p++) {
+        imgUrls.push('https://cdn.zukrein.com/' + currentMangaSlug + '/' + chNum + '/' + p + '-' + fansubId + '.jpeg');
+      }
+
+      window.mangittoAPI.onDownloadProgress(function(progressData) {
+        if (progressData.mangaSlug === currentMangaSlug && progressData.chapterNumber === 'bolum-' + chNum) {
+          rdb.style.width = progressData.percent + '%';
+          rdt.textContent = next + ' indiriliyor... ' + progressData.percent + '%';
+        }
+      });
+
+      await window.mangittoAPI.downloadChapter({ mangaSlug: currentMangaSlug, mangaTitle: currentMangaSlug, chapterNumber: String(chNum), images: imgUrls, fansubId: fansubId });
+
+      hideReaderStatus();
+      closeReader();
+      openReader(currentMangaSlug, next);
+    } catch(e) {
+      hideReaderStatus();
+      alert('Hata: ' + e.message);
+    }
+  };
+  rdno.onclick = function() { hideReaderConfirm(); };
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeReader();
+});
+
+async function deleteChapter(mangaSlug, chapterName) {
+  if (!confirm('Bu bolumu silmek istediginize emin misiniz?')) return;
+  await window.mangittoAPI.deleteDownload({ mangaSlug, chapterName });
+  loadDownloads();
+}
+
+async function tryGoOnline() {
+  var btn = document.getElementById('online-btn');
+  btn.innerHTML = SVG_SPINNER + ' Kontrol ediliyor...';
+  btn.disabled = true;
+  try {
+    var online = await window.mangittoAPI.checkOnline();
+    if (online) {
+      window.location.href = 'https://mangtto.com/';
+    } else {
+      btn.innerHTML = 'Baglanti yok';
+      setTimeout(function() { btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Baglan'; btn.disabled = false; }, 2000);
+    }
+  } catch (e) {
+    btn.innerHTML = 'Hata';
+    setTimeout(function() { btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Baglan'; btn.disabled = false; }, 2000);
+  }
+}
+
+loadDownloads();
+</script>
+</body>
+</html>
