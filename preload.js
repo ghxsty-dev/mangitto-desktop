@@ -15,4 +15,5 @@ contextBridge.exposeInMainWorld('mangittoAPI', {
   navigateBack: () => ipcRenderer.invoke('navigate-back'),
   navigateForward: () => ipcRenderer.invoke('navigate-forward'),
   navigateRefresh: () => ipcRenderer.invoke('navigate-refresh'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 });

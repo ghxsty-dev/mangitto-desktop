@@ -69,15 +69,21 @@ header button {
   border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 #reader-nav {
-  display: flex; align-items: center; justify-content: flex-end;
-  gap: 16px; padding: 12px 20px; background: #0d0d0d;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 12px 20px; background: #0d0d0d; gap: 6px;
+}
+#reader-nav .nav-center {
+  display: flex; align-items: center; gap: 8px;
 }
 #reader-nav button {
-  background: #FBBC59; border: none; border-radius: 8px;
-  padding: 8px 16px; cursor: pointer; font-weight: 600; color: #1a1a2e;
+  border: none; border-radius: 8px; padding: 8px 16px;
+  cursor: pointer; font-weight: 600; font-size: 13px;
   display: flex; align-items: center; gap: 6px;
 }
 #reader-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
+.nav-btn { background: #FBBC59; color: #1a1a2e; }
+.nav-btn-secondary { background: rgba(255,255,255,0.08); color: white; }
+.nav-btn-square { width: 36px; height: 36px; padding: 0; justify-content: center; border-radius: 6px; }
 </style>
 </head>
 <body>
@@ -108,14 +114,18 @@ header button {
     </div>
     <div id="reader-content"></div>
     <div id="reader-nav">
-      <div id="rdi" style="flex:1;display:none;flex-direction:column;gap:6px;">
-        <div id="rdt" style="font-size:13px;color:#888;"></div>
-        <div style="background:rgba(255,255,255,0.1);border-radius:8px;height:6px;overflow:hidden;"><div id="rdb" style="width:0%;height:100%;background:#FBBC59;border-radius:8px;transition:width 0.3s;"></div></div>
+      <div id="rdi" style="width:100%;display:none;flex-direction:column;gap:4px;">
+        <div id="rdt" style="font-size:12px;color:#888;text-align:center;"></div>
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;height:4px;overflow:hidden;"><div id="rdb" style="width:0%;height:100%;background:#FBBC59;border-radius:8px;transition:width 0.3s;"></div></div>
       </div>
-      <div style="display:flex;gap:8px;flex-shrink:0;" id="rda">
-        <button id="rdyes" style="display:none;background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;font-size:13px;">Evet</button>
-        <button id="rdno" style="display:none;background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:white;font-size:13px;">Hayır</button>
-        <button id="next-chapter-btn" onclick="goNextChapter()" style="background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:6px;font-size:13px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> Sonraki Bölüm</button>
+      <div id="rda" class="nav-center" style="display:flex;align-items:center;gap:8px;">
+        <button id="prev-chapter-btn" onclick="goPrevChapter()" class="nav-btn-secondary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg> Önceki Bölüm</button>
+        <button id="next-chapter-btn" onclick="goNextChapter()" class="nav-btn"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> Sonraki Bölüm</button>
+        <button id="reader-scroll-top" onclick="scrollReaderTop()" class="nav-btn-secondary nav-btn-square" title="en yukarı çık"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>
+      </div>
+      <div id="rdc" style="display:none;gap:6px;align-items:center;" class="nav-center">
+        <button id="rdyes" style="background:#FBBC59;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:600;color:#1a1a2e;font-size:12px;">Evet</button>
+        <button id="rdno" style="background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:600;color:white;font-size:12px;">Hayır</button>
       </div>
     </div>
   </div>
@@ -207,34 +217,64 @@ async function openReader(mangaSlug, chapterName) {
     }
     content.innerHTML = html;
     document.getElementById('reader-view').classList.add('active');
-    updateNextChapterBtn();
+    updateNavButtons();
   } catch (err) { alert('Görseller yüklenirken hata: ' + err.message); }
 }
 
-async function updateNextChapterBtn() {
-  var btn = document.getElementById('next-chapter-btn');
+var rdwarn = document.createElement('div');
+rdwarn.id = 'rdwarn';
+rdwarn.style.cssText = 'position:fixed;bottom:70px;right:20px;background:rgba(255,80,80,0.15);color:#ff6b6b;padding:8px 14px;border-radius:8px;font-size:12px;display:none;z-index:1001;';
+document.body.appendChild(rdwarn);
+
+function showReaderWarning(msg) { rdwarn.textContent = msg; rdwarn.style.display = 'block'; setTimeout(function() { rdwarn.style.display = 'none'; }, 3000); }
+
+async function updateNavButtons() {
+  var nextBtn = document.getElementById('next-chapter-btn');
+  var prevBtn = document.getElementById('prev-chapter-btn');
   var num = parseInt(currentChapterName.replace('bolum-', '')) || 0;
   var next = 'bolum-' + (num + 1);
+  var prev = 'bolum-' + (num - 1);
   try {
     var downloads = await window.mangittoAPI.getDownloads();
-    var found = false;
+    var nextFound = false, prevFound = false;
     for (var x = 0; x < downloads.length; x++) {
-      if (downloads[x].mangaSlug === currentMangaSlug && downloads[x].chapterName === next) {
-        found = true; break;
-      }
+      if (downloads[x].mangaSlug === currentMangaSlug && downloads[x].chapterName === next) nextFound = true;
+      if (downloads[x].mangaSlug === currentMangaSlug && downloads[x].chapterName === prev) prevFound = true;
     }
-    btn.innerHTML = (found ? '' : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> ') + 'Sonraki Bölüm';
-    btn.dataset.next = next;
-    btn.dataset.found = found ? '1' : '0';
+    nextBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> Sonraki Bölüm';
+    nextBtn.dataset.next = next;
+    nextBtn.dataset.found = nextFound ? '1' : '0';
+    if (num <= 1) {
+      prevBtn.style.display = 'none';
+    } else {
+      prevBtn.style.display = '';
+      prevBtn.dataset.prev = prev;
+      prevBtn.dataset.found = prevFound ? '1' : '0';
+    }
   } catch(e) {}
 }
 
-var rdi = document.getElementById('rdi'), rdt = document.getElementById('rdt'), rdb = document.getElementById('rdb'), rdyes = document.getElementById('rdyes'), rdno = document.getElementById('rdno'), rda = document.getElementById('rda');
+function goPrevChapter() {
+  var prevBtn = document.getElementById('prev-chapter-btn');
+  var num = parseInt(currentChapterName.replace('bolum-', '')) || 0;
+  if (num <= 1) { showReaderWarning('İlk bölümdesiniz, önceki bölüm yok.'); return; }
+  var prev = 'bolum-' + (num - 1);
+  if (prevBtn.dataset.found === '1') {
+    closeReader();
+    openReader(currentMangaSlug, prev);
+  } else {
+    showReaderWarning('Önceki bölüm indirilmemiş.');
+  }
+}
 
-function showReaderStatus(msg) { rdi.style.display = 'flex'; rdt.textContent = msg; }
-function hideReaderStatus() { rdi.style.display = 'none'; rdt.textContent = ''; rdb.style.width = '0%'; }
-function showReaderConfirm() { rdyes.style.display = ''; rdno.style.display = ''; btn.style.display = 'none'; }
-function hideReaderConfirm() { rdyes.style.display = 'none'; rdno.style.display = 'none'; btn.style.display = ''; }
+var rdi = document.getElementById('rdi'), rdt = document.getElementById('rdt'), rdb = document.getElementById('rdb'), rdyes = document.getElementById('rdyes'), rdno = document.getElementById('rdno'), rda = document.getElementById('rda'), rdc = document.getElementById('rdc');
+
+function showReaderStatus(msg) { rdi.style.display = 'flex'; rdt.textContent = msg; rda.style.display = 'none'; rdc.style.display = 'none'; }
+function hideReaderStatus() { rdi.style.display = 'none'; rdt.textContent = ''; rdb.style.width = '0%'; rda.style.display = 'flex'; rdc.style.display = 'none'; }
+function showReaderConfirm() { rdc.style.display = 'flex'; rda.style.display = 'none'; }
+function hideReaderConfirm() { rdc.style.display = 'none'; rda.style.display = 'flex'; }
+
+function scrollReaderTop() { document.getElementById('reader-content').scrollTo({ top: 0, behavior: 'smooth' }); }
 
 async function goNextChapter() {
   var btn = document.getElementById('next-chapter-btn');
@@ -311,25 +351,6 @@ async function tryGoOnline() {
       setTimeout(function() { btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Bağlan'; btn.disabled = false; }, 2000);
   }
 }
-
-var scrollBtn = document.createElement('button');
-scrollBtn.id = 'mangitto-scroll-top';
-scrollBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>';
-scrollBtn.title = 'en yukarı çık';
-Object.assign(scrollBtn.style, {
-  position: 'fixed', bottom: '80px', right: '20px', zIndex: '9999',
-  background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%',
-  width: '40px', height: '40px', cursor: 'pointer', color: 'white',
-  display: 'none', alignItems: 'center', justifyContent: 'center',
-  transition: 'all 0.2s', backdropFilter: 'blur(4px)'
-});
-scrollBtn.onmouseover = function() { this.style.background = 'rgba(255,255,255,0.15)'; };
-scrollBtn.onmouseout = function() { this.style.background = 'rgba(255,255,255,0.08)'; };
-scrollBtn.onclick = function() { window.scrollTo({ top: 0, behavior: 'smooth' }); };
-document.body.appendChild(scrollBtn);
-window.addEventListener('scroll', function() {
-  scrollBtn.style.display = window.scrollY > 300 ? 'flex' : 'none';
-});
 
 loadDownloads();
 </body>

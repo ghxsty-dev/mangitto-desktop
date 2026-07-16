@@ -1,13 +1,42 @@
 {
-  "name": "mangitto-electron",
-  "version": "1.0.0",
+  "name": "mangitto-desktop",
+  "version": "1.0.1",
   "description": "Mangitto Manga Okuyucu - Electron Uygulaması",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electron ."
+    "dev": "electron .",
+    "build": "electron-builder",
+    "dist": "electron-builder --win && gh release create v%npm_package_version% --title \"Mangitto v%npm_package_version%\" --notes \"\" dist\\Mangitto*.exe dist\\Mangitto*.exe.blockmap dist\\latest.yml"
   },
-  "dependencies": {
+  "build": {
+    "appId": "com.mangitto.desktop",
+    "productName": "Mangitto",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "inject.js",
+      "reader.html",
+      "public/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Mangitto"
+    }
+  },
+  "devDependencies": {
     "electron": "^33.0.0"
   }
 }

@@ -102,6 +102,33 @@
   document.body.style.paddingTop = '40px';
   document.documentElement.style.paddingTop = '0';
 
+  checkForUpdate();
+
+  async function checkForUpdate() {
+    try {
+      var currentVer = await window.mangittoAPI.getAppVersion();
+      var resp = await fetch('https://api.github.com/repos/ghxsty-dev/mangitto-desktop/releases/latest');
+      if (!resp.ok) return;
+      var data = await resp.json();
+      var latestVer = (data.tag_name || '').replace(/^v/, '');
+      if (!latestVer) return;
+      var cur = currentVer.split('.').map(Number);
+      var lat = latestVer.split('.').map(Number);
+      var isNewer = false;
+      for (var i = 0; i < 3; i++) {
+        if ((lat[i] || 0) > (cur[i] || 0)) { isNewer = true; break; }
+        if ((lat[i] || 0) < (cur[i] || 0)) break;
+      }
+      if (isNewer) {
+        var banner = document.createElement('div');
+        banner.style.cssText = 'position:fixed;top:44px;left:0;right:0;z-index:99997;background:#FBBC59;color:#0d0d0d;padding:10px 16px;text-align:center;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:12px;';
+        banner.innerHTML = 'Mangitto v' + latestVer + ' yayınlandı! <a href="' + data.html_url + '" target="_blank" style="color:#0d0d0d;text-decoration:underline;font-weight:700;">İndir</a> <button id="mclose-update" style="background:rgba(0,0,0,0.15);border:none;border-radius:4px;padding:2px 8px;cursor:pointer;font-weight:600;font-size:12px;color:#0d0d0d;">✕</button>';
+        document.body.appendChild(banner);
+        document.getElementById('mclose-update').onclick = function() { banner.remove(); };
+      }
+    } catch(e) {}
+  }
+
   async function dload(btn) {
     var i = info();
     if (!i) return;
@@ -134,27 +161,48 @@
       var nextChapter = 'bolum-' + (chapterNum + 1);
 
       o.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#0d0d0d;"><h2 style="margin:0;font-size:16px;color:white;">' + mangaSlug + ' - ' + chapterName + '</h2><button id="mc" style="background:none;border:none;color:white;cursor:pointer;padding:4px 8px;">' + SVG.x + '</button></div>' +
-        '<div id="mrc" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:20px;gap:8px;position:relative;">' + html + '<button id="mio-scroll-top" style="position:sticky;bottom:16px;align-self:flex-end;background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;color:white;display:none;align-items:center;justify-content:center;transition:all 0.2s;backdrop-filter:blur(4px);flex-shrink:0;" title="en yukarı çık"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button></div>' +
-        '<div id="mnb" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#0d0d0d;gap:12px;"><div id="msi" style="flex:1;display:none;flex-direction:column;gap:6px;"><div id="mst" style="font-size:13px;color:#888;"></div><div style="background:rgba(255,255,255,0.1);border-radius:8px;height:6px;overflow:hidden;"><div id="mpb" style="width:0%;height:100%;background:#FBBC59;border-radius:8px;transition:width 0.3s;"></div></div></div><div style="display:flex;gap:8px;flex-shrink:0;" id="mna"><button id="myes" style="display:none;background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;font-size:13px;">Evet</button>        <button id="mno" style="display:none;background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:white;font-size:13px;">Hayır</button><button id="mnc" style="background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:6px;font-size:13px;">' + SVG.download + ' ' + nextChapter + '</button></div></div>';
+        '<div id="mrc" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:20px;gap:8px;">' + html + '</div>' +
+        '<div id="mnb" style="display:flex;flex-direction:column;align-items:center;padding:12px 20px;background:#0d0d0d;gap:6px;"><div id="msi" style="display:none;flex-direction:column;gap:4px;width:100%;"><div id="mst" style="font-size:12px;color:#888;text-align:center;"></div><div style="background:rgba(255,255,255,0.1);border-radius:8px;height:4px;overflow:hidden;"><div id="mpb" style="width:0%;height:100%;background:#FBBC59;border-radius:8px;transition:width 0.3s;"></div></div></div><div style="display:flex;align-items:center;gap:8px;" id="mna"><button id="mprev" style="background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:white;font-size:13px;display:flex;align-items:center;gap:6px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg> Önceki Bölüm</button><button id="mnc" style="background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:6px;font-size:13px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> Sonraki Bölüm</button><button id="mio-scroll-btn" style="background:rgba(255,255,255,0.08);border:none;border-radius:6px;width:36px;height:36px;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;" title="en yukarı çık"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button></div><div id="mio-confirm" style="display:none;gap:6px;align-items:center;"><button id="myes" style="background:#FBBC59;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:600;color:#1a1a2e;font-size:12px;">Evet</button><button id="mno" style="background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:600;color:white;font-size:12px;">Hayır</button></div></div>';
       document.body.appendChild(o);
 
       var mrc = document.getElementById('mrc');
-      var mioScrollBtn = document.getElementById('mio-scroll-top');
-      mioScrollBtn.onmouseover = function() { this.style.background = 'rgba(255,255,255,0.15)'; };
-      mioScrollBtn.onmouseout = function() { this.style.background = 'rgba(255,255,255,0.08)'; };
-      mioScrollBtn.onclick = function() { mrc.scrollTo({ top: 0, behavior: 'smooth' }); };
-      mrc.addEventListener('scroll', function() {
-        mioScrollBtn.style.display = mrc.scrollTop > 300 ? 'flex' : 'none';
-      });
+      document.getElementById('mio-scroll-btn').onclick = function() { mrc.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+      var mwarn = document.getElementById('mwarn');
+      function showWarning(msg) { mwarn.textContent = msg; mwarn.style.display = 'block'; setTimeout(function() { mwarn.style.display = 'none'; }, 3000); }
+      if (!mwarn) {
+        mwarn = document.createElement('div');
+        mwarn.id = 'mwarn';
+        mwarn.style.cssText = 'position:fixed;bottom:70px;right:20px;background:rgba(255,80,80,0.15);color:#ff6b6b;padding:8px 14px;border-radius:8px;font-size:12px;display:none;z-index:1001;';
+        document.body.appendChild(mwarn);
+      }
+
+      var prevBtn = document.getElementById('mprev');
+      var num = parseInt(chapterName.replace('bolum-', '')) || 0;
+      if (num <= 1) { prevBtn.style.display = 'none'; }
+      prevBtn.onclick = async function() {
+        if (num <= 1) { showWarning('İlk bölümdesiniz, önceki bölüm yok.'); return; }
+        var prev = 'bolum-' + (num - 1);
+        try {
+          var downloads = await window.mangittoAPI.getDownloads();
+          var prevFound = false;
+          for (var x = 0; x < downloads.length; x++) {
+            if (downloads[x].mangaSlug === mangaSlug && downloads[x].chapterName === prev) { prevFound = true; break; }
+          }
+          if (prevFound) { o.remove(); openReader(mangaSlug, prev); }
+          else { showWarning('Önceki bölüm indirilmemiş.'); }
+        } catch(e) { showWarning('Hata: ' + e.message); }
+      };
 
       document.getElementById('mc').onclick = function() { o.remove(); };
 
       var si = document.getElementById('msi'), st = document.getElementById('mst'), pb = document.getElementById('mpb'), myes = document.getElementById('myes'), mno = document.getElementById('mno'), mnc = document.getElementById('mnc'), mna = document.getElementById('mna');
 
-      function showStatus(msg) { si.style.display = 'flex'; st.textContent = msg; }
-      function hideStatus() { si.style.display = 'none'; st.textContent = ''; pb.style.width = '0%'; }
-      function showConfirm() { myes.style.display = ''; mno.style.display = ''; mnc.style.display = 'none'; }
-      function hideConfirm() { myes.style.display = 'none'; mno.style.display = 'none'; mnc.style.display = ''; }
+      var mconfirm = document.getElementById('mio-confirm');
+      function showStatus(msg) { si.style.display = 'flex'; st.textContent = msg; mna.style.display = 'none'; mconfirm.style.display = 'none'; }
+      function hideStatus() { si.style.display = 'none'; st.textContent = ''; pb.style.width = '0%'; mna.style.display = 'flex'; mconfirm.style.display = 'none'; }
+      function showConfirm() { mconfirm.style.display = 'flex'; mna.style.display = 'none'; }
+      function hideConfirm() { mconfirm.style.display = 'none'; mna.style.display = 'flex'; }
 
       mnc.onclick = async function() {
         try {

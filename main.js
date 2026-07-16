@@ -141,6 +141,8 @@ ipcMain.handle('navigate-back', () => { if (mainWindow && mainWindow.webContents
 ipcMain.handle('navigate-forward', () => { if (mainWindow && mainWindow.webContents.canGoForward()) mainWindow.webContents.goForward(); });
 ipcMain.handle('navigate-refresh', () => { if (mainWindow) mainWindow.webContents.reload(); });
 
+ipcMain.handle('get-app-version', () => require('./package.json').version);
+
 ipcMain.handle('check-online', async () => {
   return new Promise((resolve) => {
     const req = https.get('https://mangtto.com', { timeout: 5000 }, (res) => {
