@@ -73,9 +73,9 @@
   }
 
   leftGroup.appendChild(makeBtn(SVG.back, 'Geri', function() { window.mangittoAPI.navigateBack(); }));
-  leftGroup.appendChild(makeBtn(SVG.forward, 'Ileri', function() { window.mangittoAPI.navigateForward(); }));
+  leftGroup.appendChild(makeBtn(SVG.forward, 'İleri', function() { window.mangittoAPI.navigateForward(); }));
   leftGroup.appendChild(makeBtn(SVG.refresh, 'Yenile', function() { window.mangittoAPI.navigateRefresh(); }));
-  leftGroup.appendChild(makeBtn(SVG.folder, 'Indirilenler', function() { showDownloadsPanel(); }));
+  leftGroup.appendChild(makeBtn(SVG.folder, 'İndirilenler', function() { showDownloadsPanel(); }));
 
   var chapterBtn = null;
   function updateChapterBtn() {
@@ -83,7 +83,7 @@
     chapterBtn = null;
     var i = info();
     if (i) {
-      chapterBtn = makeBtn(SVG.download, 'Bolumu Indir', function() { dload(chapterBtn); });
+      chapterBtn = makeBtn(SVG.download, 'Bölümü İndir', function() { dload(chapterBtn); });
       leftGroup.appendChild(chapterBtn);
     }
   }
@@ -121,7 +121,7 @@
   async function openReader(mangaSlug, chapterName) {
     try {
       var images = await window.mangittoAPI.getChapterImages({ mangaSlug: mangaSlug, chapterName: chapterName });
-      if (!images || !images.length) { alert('Gorseller bulunamadi.'); return; }
+      if (!images || !images.length) { alert('Görseller bulunamadı.'); return; }
       var ex = document.getElementById('mio'); if (ex) ex.remove();
       var o = document.createElement('div'); o.id = 'mio';
       o.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#0d0d0d;z-index:999999;display:flex;flex-direction:column;';
@@ -134,9 +134,18 @@
       var nextChapter = 'bolum-' + (chapterNum + 1);
 
       o.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#0d0d0d;"><h2 style="margin:0;font-size:16px;color:white;">' + mangaSlug + ' - ' + chapterName + '</h2><button id="mc" style="background:none;border:none;color:white;cursor:pointer;padding:4px 8px;">' + SVG.x + '</button></div>' +
-        '<div id="mrc" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:20px;gap:8px;">' + html + '</div>' +
-        '<div id="mnb" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#0d0d0d;gap:12px;"><div id="msi" style="flex:1;display:none;flex-direction:column;gap:6px;"><div id="mst" style="font-size:13px;color:#888;"></div><div style="background:rgba(255,255,255,0.1);border-radius:8px;height:6px;overflow:hidden;"><div id="mpb" style="width:0%;height:100%;background:#FBBC59;border-radius:8px;transition:width 0.3s;"></div></div></div><div style="display:flex;gap:8px;flex-shrink:0;" id="mna"><button id="myes" style="display:none;background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;font-size:13px;">Evet</button><button id="mno" style="display:none;background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:white;font-size:13px;">Hayir</button><button id="mnc" style="background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:6px;font-size:13px;">' + SVG.download + ' ' + nextChapter + '</button></div></div>';
+        '<div id="mrc" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:20px;gap:8px;position:relative;">' + html + '<button id="mio-scroll-top" style="position:sticky;bottom:16px;align-self:flex-end;background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;color:white;display:none;align-items:center;justify-content:center;transition:all 0.2s;backdrop-filter:blur(4px);flex-shrink:0;" title="en yukarı çık"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button></div>' +
+        '<div id="mnb" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#0d0d0d;gap:12px;"><div id="msi" style="flex:1;display:none;flex-direction:column;gap:6px;"><div id="mst" style="font-size:13px;color:#888;"></div><div style="background:rgba(255,255,255,0.1);border-radius:8px;height:6px;overflow:hidden;"><div id="mpb" style="width:0%;height:100%;background:#FBBC59;border-radius:8px;transition:width 0.3s;"></div></div></div><div style="display:flex;gap:8px;flex-shrink:0;" id="mna"><button id="myes" style="display:none;background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;font-size:13px;">Evet</button>        <button id="mno" style="display:none;background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:white;font-size:13px;">Hayır</button><button id="mnc" style="background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:6px;font-size:13px;">' + SVG.download + ' ' + nextChapter + '</button></div></div>';
       document.body.appendChild(o);
+
+      var mrc = document.getElementById('mrc');
+      var mioScrollBtn = document.getElementById('mio-scroll-top');
+      mioScrollBtn.onmouseover = function() { this.style.background = 'rgba(255,255,255,0.15)'; };
+      mioScrollBtn.onmouseout = function() { this.style.background = 'rgba(255,255,255,0.08)'; };
+      mioScrollBtn.onclick = function() { mrc.scrollTo({ top: 0, behavior: 'smooth' }); };
+      mrc.addEventListener('scroll', function() {
+        mioScrollBtn.style.display = mrc.scrollTop > 300 ? 'flex' : 'none';
+      });
 
       document.getElementById('mc').onclick = function() { o.remove(); };
 
@@ -168,7 +177,7 @@
               try {
                 var resp = await fetch('https://mangtto.com/api/manga/' + mangaSlug + '/' + (chapterNum + 1));
                 var apiData = await resp.json();
-                if (!apiData || !apiData.success || !apiData.data || !apiData.data.chapter || !apiData.data.chapter.static || !apiData.data.chapter.static.length) { hideStatus(); alert('API hatasi.'); return; }
+                if (!apiData || !apiData.success || !apiData.data || !apiData.data.chapter || !apiData.data.chapter.static || !apiData.data.chapter.static.length) { hideStatus(); alert('API hatası.'); return; }
 
                 var fansubId = apiData.data.chapter.static[0].fansubId;
                 var pageCount = apiData.data.chapter.static[0].fileSize || 50;
@@ -213,7 +222,7 @@
     o.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;';
     var p = document.createElement('div');
     p.style.cssText = 'background:#0d0d0d;border-radius:16px;padding:24px;width:90%;max-width:600px;max-height:80vh;overflow-y:auto;color:white;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
-    p.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h2 style="margin:0;font-size:20px;display:flex;align-items:center;gap:8px;color:white;">' + SVG.folder + ' Indirilenler</h2><button id="mcp" style="background:none;border:none;color:white;cursor:pointer;padding:4px;">' + SVG.x + '</button></div><div id="mdl" style="min-height:100px;"></div>';
+    p.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h2 style="margin:0;font-size:20px;display:flex;align-items:center;gap:8px;color:white;">' + SVG.folder + ' İndirilenler</h2><button id="mcp" style="background:none;border:none;color:white;cursor:pointer;padding:4px;">' + SVG.x + '</button></div><div id="mdl" style="min-height:100px;"></div>';
     o.appendChild(p); document.body.appendChild(o);
     document.getElementById('mcp').onclick = function() { o.remove(); };
     o.onclick = function(e) { if (e.target === o) o.remove(); };
@@ -224,10 +233,10 @@
 
   async function loadList() {
     var el = document.getElementById('mdl'); if (!el) return;
-    el.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Yukleniyor...</div>';
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Yükleniyor...</div>';
     try {
       var d = await window.mangittoAPI.getDownloads();
-      if (!d.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:#888;">Henuz indirilen bolum yok.</div>'; return; }
+      if (!d.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:#888;">Henüz indirilen bölüm yok.</div>'; return; }
 
       groupsData = {};
       for (var i = 0; i < d.length; i++) {

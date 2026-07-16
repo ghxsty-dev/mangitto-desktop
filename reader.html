@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mangitto - Indirilenler</title>
+<title>Mangitto - İndirilenler</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -83,18 +83,27 @@ header button {
 <body>
   <div id="app">
     <header>
-      <h1><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Indirilenler</h1>
+      <h1><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> İndirilenler</h1>
       <div style="display:flex;gap:8px;">
         <button id="refresh-btn" onclick="loadDownloads()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Yenile</button>
-        <button id="online-btn" onclick="tryGoOnline()" style="background:#4CAF50;color:white;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Baglan</button>
+        <button id="online-btn" onclick="tryGoOnline()" style="background:#4CAF50;color:white;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Bağlan</button>
       </div>
+    </header>
+    <div id="downloads-list" style="padding:20px;max-width:700px;margin:0 auto;"></div>
+  </div>
+
+  <div id="win-controls" style="position:fixed;top:0;right:0;height:40px;display:flex;z-index:10000;-webkit-app-region:no-drag;">
+    <button onclick="window.mangittoAPI.windowMinimize()" style="background:none;border:none;color:#888;cursor:pointer;width:42px;height:100%;display:flex;align-items:center;justify-content:center;transition:all 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+    <button onclick="window.mangittoAPI.windowMaximize()" style="background:none;border:none;color:#888;cursor:pointer;width:42px;height:100%;display:flex;align-items:center;justify-content:center;transition:all 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/></svg></button>
+    <button onclick="window.mangittoAPI.windowClose()" style="background:none;border:none;color:#888;cursor:pointer;width:42px;height:100%;display:flex;align-items:center;justify-content:center;transition:all 0.15s;" onmouseover="this.style.background='rgba(255,80,80,0.3)'" onmouseout="this.style.background='none'"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
     </header>
     <div id="downloads-list" style="padding:20px;max-width:700px;margin:0 auto;"></div>
   </div>
 
   <div id="reader-view">
     <div id="reader-header">
-      <h2 id="reader-title">Bolum</h2>
+      <h2 id="reader-title">Bölüm</h2>
       <button onclick="closeReader()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div id="reader-content"></div>
@@ -105,8 +114,8 @@ header button {
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;" id="rda">
         <button id="rdyes" style="display:none;background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;font-size:13px;">Evet</button>
-        <button id="rdno" style="display:none;background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:white;font-size:13px;">Hayir</button>
-        <button id="next-chapter-btn" onclick="goNextChapter()" style="background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:6px;font-size:13px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> Sonraki Bolum</button>
+        <button id="rdno" style="display:none;background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:white;font-size:13px;">Hayır</button>
+        <button id="next-chapter-btn" onclick="goNextChapter()" style="background:#FBBC59;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:6px;font-size:13px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> Sonraki Bölüm</button>
       </div>
     </div>
   </div>
@@ -125,12 +134,12 @@ var currentChapterName = '';
 
 async function loadDownloads() {
   const listEl = document.getElementById('downloads-list');
-  listEl.innerHTML = '<div class="loading">Yukleniyor...</div>';
+  listEl.innerHTML = '<div class="loading">Yükleniyor...</div>';
 
   try {
     const downloads = await window.mangittoAPI.getDownloads();
     if (downloads.length === 0) {
-      listEl.innerHTML = '<div class="empty">Henuz indirilen bolum yok.<br>Internete baglanip manga okurken indirme butonuna tiklayarak bolum indirebilirsiniz.</div>';
+      listEl.innerHTML = '<div class="empty">Henüz indirilen bölüm yok.<br>İnternete bağlanıp manga okurken indirme butonuna tıklayarak bölüm indirebilirsiniz.</div>';
       return;
     }
 
@@ -151,7 +160,7 @@ async function loadDownloads() {
     }
     listEl.innerHTML = html;
   } catch (err) {
-    listEl.innerHTML = '<div class="loading">Yuklenirken hata: ' + err.message + '</div>';
+    listEl.innerHTML = '<div class="loading">Yüklenirken hata: ' + err.message + '</div>';
   }
 }
 
@@ -187,7 +196,7 @@ function closeReader() { document.getElementById('reader-view').classList.remove
 async function openReader(mangaSlug, chapterName) {
   try {
     const images = await window.mangittoAPI.getChapterImages({ mangaSlug, chapterName });
-    if (!images || images.length === 0) { alert('Gorseller bulunamadi.'); return; }
+    if (!images || images.length === 0) { alert('Görseller bulunamadı.'); return; }
     currentMangaSlug = mangaSlug;
     currentChapterName = chapterName;
     document.getElementById('reader-title').textContent = mangaSlug + ' - ' + chapterName;
@@ -199,7 +208,7 @@ async function openReader(mangaSlug, chapterName) {
     content.innerHTML = html;
     document.getElementById('reader-view').classList.add('active');
     updateNextChapterBtn();
-  } catch (err) { alert('Gorseller yuklenirken hata: ' + err.message); }
+  } catch (err) { alert('Görseller yüklenirken hata: ' + err.message); }
 }
 
 async function updateNextChapterBtn() {
@@ -214,7 +223,7 @@ async function updateNextChapterBtn() {
         found = true; break;
       }
     }
-    btn.innerHTML = (found ? '' : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> ') + 'Sonraki Bolum';
+    btn.innerHTML = (found ? '' : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg> ') + 'Sonraki Bölüm';
     btn.dataset.next = next;
     btn.dataset.found = found ? '1' : '0';
   } catch(e) {}
@@ -245,7 +254,7 @@ async function goNextChapter() {
     try {
       var resp = await fetch('https://mangtto.com/api/manga/' + currentMangaSlug + '/' + (num + 1));
       var apiData = await resp.json();
-      if (!apiData || !apiData.success || !apiData.data || !apiData.data.chapter || !apiData.data.chapter.static || !apiData.data.chapter.static.length) { hideReaderStatus(); alert('API hatasi.'); return; }
+      if (!apiData || !apiData.success || !apiData.data || !apiData.data.chapter || !apiData.data.chapter.static || !apiData.data.chapter.static.length) { hideReaderStatus(); alert('API hatası.'); return; }
 
       var fansubId = apiData.data.chapter.static[0].fansubId;
       var pageCount = apiData.data.chapter.static[0].fileSize || 50;
@@ -280,7 +289,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 async function deleteChapter(mangaSlug, chapterName) {
-  if (!confirm('Bu bolumu silmek istediginize emin misiniz?')) return;
+  if (!confirm('Bu bölümü silmek istediğinize emin misiniz?')) return;
   await window.mangittoAPI.deleteDownload({ mangaSlug, chapterName });
   loadDownloads();
 }
@@ -294,16 +303,34 @@ async function tryGoOnline() {
     if (online) {
       window.location.href = 'https://mangtto.com/';
     } else {
-      btn.innerHTML = 'Baglanti yok';
-      setTimeout(function() { btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Baglan'; btn.disabled = false; }, 2000);
+      btn.innerHTML = 'Bağlantı yok';
+      setTimeout(function() { btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Bağlan'; btn.disabled = false; }, 2000);
     }
   } catch (e) {
     btn.innerHTML = 'Hata';
-    setTimeout(function() { btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Baglan'; btn.disabled = false; }, 2000);
+      setTimeout(function() { btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Bağlan'; btn.disabled = false; }, 2000);
   }
 }
 
+var scrollBtn = document.createElement('button');
+scrollBtn.id = 'mangitto-scroll-top';
+scrollBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>';
+scrollBtn.title = 'en yukarı çık';
+Object.assign(scrollBtn.style, {
+  position: 'fixed', bottom: '80px', right: '20px', zIndex: '9999',
+  background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%',
+  width: '40px', height: '40px', cursor: 'pointer', color: 'white',
+  display: 'none', alignItems: 'center', justifyContent: 'center',
+  transition: 'all 0.2s', backdropFilter: 'blur(4px)'
+});
+scrollBtn.onmouseover = function() { this.style.background = 'rgba(255,255,255,0.15)'; };
+scrollBtn.onmouseout = function() { this.style.background = 'rgba(255,255,255,0.08)'; };
+scrollBtn.onclick = function() { window.scrollTo({ top: 0, behavior: 'smooth' }); };
+document.body.appendChild(scrollBtn);
+window.addEventListener('scroll', function() {
+  scrollBtn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+});
+
 loadDownloads();
-</script>
 </body>
 </html>

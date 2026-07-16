@@ -158,7 +158,7 @@ function createWindow() {
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    icon: path.join(__dirname, 'icon.png'),
+    icon: path.join(__dirname, 'public', 'logo.png'),
     frame: false,
     titleBarStyle: 'hidden',
     webPreferences: {
@@ -218,6 +218,8 @@ function createWindow() {
       mainWindow.loadFile(readerPath);
     }
   });
+
+  mainWindow.maximize();
 
   tryLoadOnline();
 
